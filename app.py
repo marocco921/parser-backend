@@ -5,7 +5,6 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-import whois
 
 app = FastAPI()
 
@@ -29,6 +28,7 @@ def find_contacts(query: str):
         'source': 'Mega Parser'
     }
     
+    # Поиск через DuckDuckGo
     try:
         url = f"https://html.duckduckgo.com/html/?q={query}+official+website"
         resp = requests.get(url, headers={'User-Agent': ua.random}, timeout=10)
@@ -44,6 +44,7 @@ def find_contacts(query: str):
     except:
         pass
     
+    # Парсим сайт
     if result['website']:
         try:
             resp = requests.get(result['website'], headers={'User-Agent': ua.random}, timeout=10)
@@ -68,15 +69,6 @@ def find_contacts(query: str):
                 for key, pattern in patterns.items():
                     if re.search(pattern, href) and not result['social'].get(key):
                         result['social'][key] = href
-        except:
-            pass
-    
-    if not result['emails']:
-        try:
-            domain = query.lower().replace(' ', '') + '.com'
-            w = whois.whois(domain)
-            if w.emails:
-                result['emails'] = [w.emails] if isinstance(w.emails, str) else w.emails
         except:
             pass
     
